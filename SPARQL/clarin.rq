@@ -1,0 +1,134 @@
+#Find out all datasets and calculate how many triples there are per graph
+
+SELECT DISTINCT ?g (count(?p) as ?triples)
+WHERE { GRAPH ?g { ?s ?p ?o } }
+GROUP BY ?g
+
+#Find out which classes are in use in the data (from the SPARQL endpoint) found in a given SPARQL endpoint
+
+SELECT ?class (count(?s) as ?count)
+WHERE { ?s a ?class }
+GROUP BY ?class
+
+
+#which predicates are used with PE22_Persistent_Dataset
+
+SELECT ?p (count(?p) as ?count) WHERE { [a
+<http://parthenos.d4science.org/CRMext/CRMpe.rdfs/PE22_Persistent_Dataset>] ?p
+?o } GROUP BY ?p
+
+
+#Enumerate classes linked from a given class (:class1) and predicates that link instances of the given class and the target classes.
+
+
+SELECT ?p ?c (COUNT(?p) AS ?pc) {
+  ?f a <http://parthenos.d4science.org/CRMext/CRMpe.rdfs/PE1_Service> .
+  ?t a ?c .
+  ?f ?p ?t .
+  FILTER(?c != owl:Class)
+} GROUP BY ?p ?c
+
+
+
+### q2
+SELECT ?p ?c (COUNT(?p) AS ?pc) {
+  ?f a <http://parthenos.d4science.org/CRMext/CRMpe.rdfs/PE1_Service> ;
+     ?p [ a ?c ].
+FILTER(!sameTerm(?c, owl:Class))
+} GROUP BY ?p ?c
+
+
+#Find out how many graphs are there together
+
+SELECT (COUNT (DISTINCT ?g) AS ?gNum)
+WHERE { GRAPH ?g
+  { ?s ?p ?o }
+
+}
+
+#The number of nodes equals to the sum of distinct subjects and objects.
+
+SELECT (COUNT (DISTINCT ?node) AS ?vNum)
+WHERE {
+  { ?node ?p ?obj }
+  UNION
+  { ?obj ?p ?node }
+}
+
+#Number of single triples between two nodes
+
+SELECT ?s ?o (COUNT (*) AS ?tNum)
+WHERE {
+  { ?s ?p ?o }
+  UNION
+  { ?o ?q ?s }
+}
+GROUP BY ?s ?o
+
+
+#How many graphs are there altogether
+
+SELECT (COUNT (DISTINCT ?g) AS ?gNum)
+WHERE { GRAPH ?g
+  { ?s ?p ?o }
+
+}
+
+##### CLARIN DATA ANALYSIS#####
+
+# Return all the objects filtered by the value "clarin.eu:cr1:p_1271859438164"
+
+PREFIX crmpe: <http://www.ics.forth.gr/isl/CRMext/CRMpe.rdfs/>
+PREFIX crmdig: <http://www.ics.forth.gr/isl/CRMext/CRMdig.rdfs/>
+PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+PREFIX ecrm: <http://erlangen-crm.org/current/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+SELECT ?object ?value WHERE{
+
+              ?object rdfs:label ?value .
+
+              FILTER( ?value = "clarin.eu:cr1:p_1271859438164").}
+
+
+
+
+
+# Return all the objects filtered by the label "cmdi-profile"
+
+PREFIX crmpe: <http://www.ics.forth.gr/isl/CRMext/CRMpe.rdfs/>
+PREFIX crmdig: <http://www.ics.forth.gr/isl/CRMext/CRMdig.rdfs/>
+PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+PREFIX ecrm: <http://erlangen-crm.org/current/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+              SELECT ?o ?label WHERE {
+
+              ?o rdfs:label ?label .
+
+              filter(?label="cmdi-profile")
+
+              }
+
+
+
+# Return S/O/P which contains "INL" in its subject
+
+
+PREFIX crmpe: <http://www.ics.forth.gr/isl/CRMext/CRMpe.rdfs/>
+PREFIX crmdig: <http://www.ics.forth.gr/isl/CRMext/CRMdig.rdfs/>
+PREFIX crm: <http://www.cidoc-crm.org/cidoc-crm/>
+PREFIX ecrm: <http://erlangen-crm.org/current/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+
+
+              SELECT ?s ?p ?o
+
+              WHERE
+
+              { ?s ?p ?o .FILTER regex(str(?s), "INL") .}
