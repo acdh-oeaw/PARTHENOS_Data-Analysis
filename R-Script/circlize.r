@@ -18,20 +18,25 @@ SELECT ?p ?c (COUNT(?p) AS ?pc) {
   "
 
 res <- SPARQL(url=endpoint, q)$results
- 
+
+#par(mar = c(0.01, 0.01, 0.01, 0.01)) # Set the margin on all sides to 6
+par( cex= 0.5 )
+
+chordDiagram(res, annotationTrack = c("grid", "axis"), preAllocateTracks = list(track.height = 0.5)) 
+
+circos.trackPlotRegion(track.index = 1, panel.fun = function(x, y)  {
+    xlim = get.cell.meta.data("xlim")
+    xplot = get.cell.meta.data("xplot")
+    ylim = get.cell.meta.data("ylim")
+    sector.name = get.cell.meta.data("sector.index")
+   
+    circos.text(mean(xlim), 0, sector.name,  cex = 0.7, 
+         facing = "clockwise", niceFacing = TRUE, adj = c(0,0))
+   
+        
+}, bg.border = NA) # here set bg.border to NA is important
 
 
-chordDiagram(res, annotationTrack = c("grid", "axis"), preAllocateTracks = list(track.height = 0.3)) 
-circos.trackPlotRegion(track.index = 1, panel.fun = function(x, y) {
-xlim = get.cell.meta.data("xlim")
-ylim = get.cell.meta.data("ylim")
-sector.name = get.cell.meta.data("sector.index") 
-circos.text(mean(xlim), ylim[1], sector.name, facing = "clockwise",
-niceFacing = TRUE, adj = c(0, 0.5)) }, bg.border = NA)
 
-
-
-
-
-
+circos.clear()
 

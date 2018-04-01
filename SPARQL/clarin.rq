@@ -1,4 +1,4 @@
-#Find out all datasets and calculate how many triples there are per graph
+  #Find out all datasets and calculate how many triples there are per graph
 
 SELECT DISTINCT ?g (count(?p) as ?triples)
 WHERE { GRAPH ?g { ?s ?p ?o } }
