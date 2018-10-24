@@ -1,0 +1,253 @@
+
+#Find all the named graph
+
+SELECT DISTINCT ?g 
+  WHERE { GRAPH ?g { ?s ?p ?o } }
+GROUP BY ?g
+
+#How many graphs are there altogether
+
+SELECT (COUNT (DISTINCT ?g) AS ?gNum)
+  WHERE { GRAPH ?g
+  { ?s ?p ?o }
+
+  }
+
+#List of classes with COUNT
+
+SELECT DISTINCT ?c (count(?c) as ?count)
+    WHERE {
+      GRAPH ?g
+        {[] a ?c .}
+    FILTER regex(?g, "clarin") 
+    }
+
+GROUP BY ?c
+ORDER BY DESC (?count)
+
+#Number of triples per CLARIN graph
+
+SELECT DISTINCT ?g (count(?p) as ?triples)
+  WHERE { GRAPH ?g { ?s ?p ?o } 
+  FILTER regex(?g, "clarin") 
+  }
+GROUP BY ?g
+ORDER BY DESC (?triples)
+
+#Number of triples in CLARIN graphs
+
+SELECT  (count(?p) as ?triples) 
+WHERE  {GRAPH ?g { ?s ?p ?o } FILTER regex(?g, "clarin") 
+  }
+
+#Find out which classes are in use in the graph = Q9
+
+SELECT ?g ?class (count(?s) as ?count)
+  WHERE {GRAPH ?g { ?s a ?class}
+  FILTER regex(?g, "clarin") }
+GROUP BY ?class ?g 
+ORDER BY DESC (?count)
+
+#Find out which properties are usend in CLARIN graphs
+
+Select ?p (count(?p) as ?count) 
+WHERE { GRAPH ?g {?s ?p ?o }
+FILTER regex(?g, "clarin")
+ FILTER(?p != rdf:type)
+ FILTER(?p != rdfs:label) }
+GROUP BY ?p
+ORDER BY DESC(?count)
+
+#Find out which PE classes are in use in each CLARIN graph
+
+SELECT ?g ?class (count(?s) as ?count)
+  WHERE {GRAPH ?g { ?s a ?class}
+  FILTER regex(?g, "clarin")
+  FILTER(STRSTARTS(STR(?class), "http://parthenos.d4science.org/CRMext/CRMpe.rdfs/")) }
+GROUP BY ?class ?g 
+ORDER BY DESC (?count)
+
+#Find out which PE classes are in use in CLARIN graphs 
+
+SELECT ?class (count(?s) as ?count)
+ WHERE {GRAPH ?g { ?s a ?class}
+ FILTER regex(?g, "clarin")
+ FILTER(STRSTARTS(STR(?class), "http://parthenos.d4science.org/CRMext/CRMpe.rdfs/")) }
+GROUP BY ?class 
+ORDER BY DESC (?count)
+
+#The most connected entities = Q14
+
+SELECT  ?g ?resource  COUNT(*) AS ?countOfConnections 
+
+  WHERE {
+	  GRAPH ?g { 
+		{ ?resource ?pTo ?resourceTo } UNION
+		{ ?resourceFrom ?pFrom ?resource } FILTER regex(?g, "clarin")
+		}
+  }	 
+GROUP BY ?g ?resource
+ORDER BY DESC (?countOfConnections) ?g
+
+#Return most connected entities while differentiating between incoming and outgoing edges (including related graphs) = Q15
+
+SELECT ?g ?resource  COUNT(?pFrom) AS ?countPredicates_FromResource  COUNT(?pTo) AS ?countPredicates_ToResource  
+
+		WHERE {
+			GRAPH ?g { 
+				{ ?resource ?pFrom ?resourceTo } UNION
+				{ ?resourceFrom ?pTo ?resource } FILTER regex(?g, "clarin")
+			} 
+		} 
+GROUP BY ?g ?resource
+ORDER BY DESC ( ?countPredicates_FromResource ) 
+
+#All uesd predicates + frequencies = Q3
+
+SELECT ?g ?p (count(?p) as ?count)
+  WHERE {GRAPH ?g {[] ?p []}
+  FILTER regex(?g, "clarin") }
+GROUP BY ?p ?g 
+ORDER BY DESC(?count)
+
+#The number of nodes equals to the sum of distinct subjects and objects = Q10
+
+SELECT ?g (COUNT (DISTINCT ?node) AS ?vNum)
+FROM Named <http://parthenos.d4science.org/handle/api_________::parthenos___::clarin::p_1357720977461/clarin______::2e87aeb259e8566e2fbc8eca20b93eb5>
+FROM Named <http://parthenos.d4science.org/handle/api_________::parthenos___::clarin::p_1349361150727/clarin______::819b94220a62615bd37bd594d3efe6a2>
+WHERE { {GRAPH ?g
+  { ?node ?p ?obj }}
+  UNION
+ { { ?obj ?p ?node }
+}}
+
+SELECT ?g (COUNT (DISTINCT ?node) AS ?vNum)
+WHERE { {GRAPH ?g
+  { ?node ?p ?obj }}
+  UNION
+ { { ?obj ?p ?node }
+}
+FILTER regex(?g, "clarin") }
+ORDER BY DESC(?vNum)
+
+#Enumerate classes linked from a given class and predicates that link instances of the given class and the target classes. = analysis by class
+
+#PE15
+
+SELECT ?g ?p ?c (COUNT(?p) AS ?pc) 
+FROM Named <http://parthenos.d4science.org/handle/api_________::parthenos___::clarin::p_1357720977461/clarin______::2e87aeb259e8566e2fbc8eca20b93eb5>
+FROM Named <http://parthenos.d4science.org/handle/api_________::parthenos___::clarin::p_1349361150727/clarin______::819b94220a62615bd37bd594d3efe6a2>
+WHERE {GRAPH ?g
+{
+  ?f a <http://parthenos.d4science.org/CRMext/CRMpe.rdfs/PE15_Data_E-Service> .
+  ?t a ?c .
+  ?f ?p ?t .
+  FILTER(?c != owl:Class)
+}} GROUP BY ?g ?p ?c
+
+SELECT ?g ?p ?c (COUNT(?p) AS ?pc) 
+WHERE {GRAPH ?g
+{
+  ?f a <http://parthenos.d4science.org/CRMext/CRMpe.rdfs/PE15_Data_E-Service> .
+  ?t a ?c .
+  ?f ?p ?t .
+  FILTER(?c != owl:Class)
+  FILTER regex(?g, "clarin")
+}} 
+GROUP BY ?g ?p ?c
+ORDER BY DESC(?pc)
+
+#PE29
+
+SELECT ?g ?p ?c (COUNT(?p) AS ?pc) 
+FROM Named <http://parthenos.d4science.org/handle/api_________::parthenos___::clarin::p_1357720977461/clarin______::2e87aeb259e8566e2fbc8eca20b93eb5>
+FROM Named <http://parthenos.d4science.org/handle/api_________::parthenos___::clarin::p_1349361150727/clarin______::819b94220a62615bd37bd594d3efe6a2>
+WHERE {GRAPH ?g
+{
+  ?f a <http://parthenos.d4science.org/CRMext/CRMpe.rdfs/PE29_Access_Point> .
+  ?t a ?c .
+  ?f ?p ?t .
+  FILTER(?c != owl:Class)
+}} GROUP BY ?g ?p ?c
+
+
+SELECT ?g ?p ?c (COUNT(?p) AS ?pc) 
+WHERE {GRAPH ?g
+{
+  ?f a <http://parthenos.d4science.org/CRMext/CRMpe.rdfs/PE29_Access_Point> .
+  ?t a ?c .
+  ?f ?p ?t .
+    FILTER(?c != owl:Class)
+  FILTER regex(?g, "clarin")
+}} 
+GROUP BY ?g ?p ?c
+ORDER BY DESC(?pc)
+
+#PE24
+
+SELECT ?g ?p ?c (COUNT(?p) AS ?pc) 
+FROM Named <http://parthenos.d4science.org/handle/api_________::parthenos___::clarin::p_1357720977461/clarin______::2e87aeb259e8566e2fbc8eca20b93eb5>
+FROM Named <http://parthenos.d4science.org/handle/api_________::parthenos___::clarin::p_1349361150727/clarin______::819b94220a62615bd37bd594d3efe6a2>
+WHERE {GRAPH ?g
+{
+  ?f a <http://parthenos.d4science.org/CRMext/CRMpe.rdfs/PE24_Volatile_Dataset> .
+  ?t a ?c .
+  ?f ?p ?t .
+  FILTER(?c != owl:Class)
+}} GROUP BY ?g ?p ?c
+
+SELECT ?g ?p ?c (COUNT(?p) AS ?pc) 
+WHERE {GRAPH ?g
+{
+  ?f a <http://parthenos.d4science.org/CRMext/CRMpe.rdfs/PE24_Volatile_Dataset> .
+  ?t a ?c .
+  ?f ?p ?t .
+  FILTER(?c != owl:Class)
+  FILTER regex(?g, "clarin")
+}} 
+GROUP BY ?g ?p ?c
+ORDER BY DESC(?pc)
+
+#E39
+
+SELECT ?g ?p ?c (COUNT(?p) AS ?pc) 
+WHERE {GRAPH ?g
+{
+  ?f a <http://www.cidoc-crm.org/cidoc-crm/E39_Actor> .
+  ?t a ?c .
+  ?f ?p ?t .
+  FILTER(?c != owl:Class)
+  FILTER regex(?g, "clarin")
+}} 
+GROUP BY ?g ?p ?c
+ORDER BY DESC(?pc)
+
+#Number of single triples between two graphs = Q11
+
+SELECT ?g ?s ?o (COUNT (*) AS ?tNum)
+FROM Named <http://parthenos.d4science.org/handle/api_________::parthenos___::clarin::p_1357720977461/clarin______::2e87aeb259e8566e2fbc8eca20b93eb5>
+FROM Named <http://parthenos.d4science.org/handle/api_________::parthenos___::clarin::p_1349361150727/clarin______::819b94220a62615bd37bd594d3efe6a2>
+WHERE { GRAPH ?g {{ ?s ?p ?o } 
+UNION { ?o ?q ?s } }}
+GROUP BY ?s ?o ORDER BY DESC (?tNum)
+
+# Count instances belonging to a given class (E39).
+
+SELECT (COUNT(?s) AS ?rc)
+    WHERE {
+      GRAPH ?g
+        {?s a <http://www.cidoc-crm.org/cidoc-crm/E39_Actor> .}
+        FILTER regex(?g, "clarin")
+    }
+
+# Count triples whose subject belongs to PE29 and whose object is literal.
+
+SELECT (COUNT(?s) AS ?rc)
+    WHERE {
+      GRAPH ?g {
+        ?s ?p ?o .
+        ?s a <http://parthenos.d4science.org/CRMext/CRMpe.rdfs/PE29_Access_Point>  .
+        FILTER(isLiteral(?o))
+        FILTER regex(?g, "clarin")
+      }}
+
