@@ -20,6 +20,7 @@ SELECT ?p ?c (COUNT(?p) AS ?pc) {
 res <- SPARQL(url=endpoint, q)$results
 
 #par(mar = c(0.01, 0.01, 0.01, 0.01)) # Set the margin on all sides to 6
+circos.par(canvas.xlim = c(-1.5, 1.5), canvas.ylim = c(-1.5, 1.5)) 
 par( cex= 0.5 )
 
 chordDiagram(res, annotationTrack = c("grid", "axis"), preAllocateTracks = list(track.height = 0.5)) 

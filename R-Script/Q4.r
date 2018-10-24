@@ -2,6 +2,7 @@ library(SPARQL)
 library(ggplot2)
 library(reshape)
 library(scales)
+
 endpoint <- "https://virtuoso.parthenos.d4science.org/sparql"
 
 #Q4 - all used Subject types + frequencies
@@ -16,18 +17,13 @@ LIMIT 10
 res <- SPARQL(url=endpoint, q)$results
 
 
-ggplot(res, aes(x = type, y = typeCount,  fill = typeCount, label = type)) +
+ggplot(data = res, aes(x=reorder(type, -typeCount), 
+y=typeCount, fill=type)) + theme_bw() + geom_bar(stat='identity') + 
+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) + 
+ggtitle(' All used Subject types + frequencies - LIMIT 10') + 
+labs(x='Subject', y='Frequency') + 
+theme(legend.position='none') 
 
-  geom_col() +
 
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-
-  scale_fill_gradient(low = "blue", high = "red", name = "TypeCount", labels = comma) +
-
-  ylim(c(0, 1000000)) +
-
-  ggtitle("Q4 - all used Subject types + frequencies") +
-
-    theme(plot.title = element_text(hjust = 0.5))
 
 
